@@ -1,3 +1,4 @@
+/*页面头部*/
 const lyTop = {
     template: "\
     <div class='nav-top'> \
@@ -11,11 +12,11 @@ const lyTop = {
                     </div> \
                     <div class='yui3-u Center searchArea'> \
                         <div class='search'> \
-                            <form action='' class='sui-form form-inline'> \
+                            <form action='' class='sui-form form-inline' @submit.prevent='search''> \
                                 <!--searchAutoComplete--> \
                                 <div class='input-append'> \
                                     <input type='text' id='autocomplete' v-model='key' \
-                                           class='input-error input-xxlarge'/> \
+                                           class='input-error input-xxlarge'  /> \
                                     <button @click='search' class='sui-btn btn-xlarge btn-danger' type='button'>搜索</button> \
                                 </div> \
                             </form> \
@@ -79,7 +80,7 @@ const lyTop = {
     },
     methods: {
         search() {
-            window.location = 'search.html?key=' + this.key;
+            window.location = '/search.html?key=' + this.key;       // 跳转页面，并且把key携带过去
         },
         getUrlParam: function (name) {
             var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -87,14 +88,14 @@ const lyTop = {
             if (r != null) {
                 return decodeURI(r[2]);
             }
-            return null;
+            return "";
         }
     },
     created() {
         this.key = this.getUrlParam("key");
     },
     components: {
-        shortcut:() => import('./shortcut.js')
+        shortcut:() => import('./shortcut.js')      /*导入了shortcut组件*/
     }
 }
-export default lyTop;
+export default lyTop;  /*定好的组件导出，在首页、搜索页等地方就可以应用它*/

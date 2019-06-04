@@ -18,7 +18,7 @@
 	
 	<!-- 头部栏位 -->
 	<div id="nav-bottom">
-		<ly-top/>
+		<ly-top/>		<!--页面使用自定义组件，页首-->
 	</div>
 	<!--页面顶部，由js动态加载-->
 	<script src="./js/vue/vue.js"></script>
@@ -28,7 +28,7 @@
         var indexVm = new Vue({
             el:"#nav-bottom",
             components:{
-                lyTop:() => import('./js/pages/top.js')
+                lyTop:() => import('./js/pages/top.js')		/*导入自定义组件*/
 			}
         });
 	</script>

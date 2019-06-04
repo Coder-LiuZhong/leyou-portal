@@ -113,28 +113,22 @@
                 </ul>
                 <!--已选择过滤项-->
                 <ul class="tags-choose">
-                    <li class="tag">
-                        品牌:<span style="color: red">apple</span>
-                        <i class="sui-icon icon-tb-close"></i>
-                    </li>
-                    <li class="tag">
-                        内存:<span style="color: red">4G</span>
-                        <i class="sui-icon icon-tb-close"></i>
+                    <li class="tag" v-for="(v,k) in search.filter" :key="k">
+                        {{k==='brandId'?'品牌':k}}:<span style="color: red" v-text="findValue(k,v)"></span>
+                        <i class="sui-icon icon-tb-close" @click="deleteFilter(k)"></i>
                     </li>
                 </ul>
                 <div class="clearfix"></div>
             </div>
             <!--selector-->
             <div class="clearfix selector">
-                <div class="type-wrap" v-for="(filter, n) in remainFilters" :key="filter.k" v-if="filter.k !== 'brandId'"
-                     v-show="n <= 5 || show">
-                    <div class="fl key">{{filter.k ==='cid3'? "分类" : filter.k}}</div>
+                <div class="type-wrap" v-for="(filter, n) in remainFilters" :key="filter.k" v-if="filter.k !== 'brandId'" v-show="n<=5||showMore">   <!--品牌跟其他的不一样，有图片，css也不一样，所以分两种-->
+                    <div class="fl key">{{filter.k ==='cid3'? "分类" : filter.k}}</div>       <!--商品分类取值跟其他规格又是不一样-->
                     <div class="fl value">
                         <ul class="type-list">
-                            <li v-for="(option,i) in filter.options" :key="i" @click="selectFilter(filter.k, option)">
-                                <a>{{option.name || option}}</a>
+                            <li v-for="(option,i) in filter.options" :key="i" @click="selectFilter(filter.k, option.id||option)" v-if="option">    <!-- v-if: option有值才显示，过滤掉了为null的数据 -->
+                                <a>{{option.name || option}}</a>        <!--商品分类的option里面有name，其他的都直接就是结果，所以用option本身-->
                             </li>
-
                         </ul>
                     </div>
                     <div class="fl ext"></div>
@@ -143,12 +137,10 @@
                     <div class="fl key brand">品牌</div>
                     <div class="value logos">
                         <ul class="logo-list">
-                            <li v-for="(option,j) in filter.options" :key="j" v-if="option.image"
-                                @click="selectFilter(filter.k, option)">
+                            <li v-for="(option,j) in filter.options" :key="j" v-if="option.image" @click="selectFilter(filter.k, option.id||option)">
                                 <img :src="option.image"/>
                             </li>
-
-                            <li style="text-align: center" v-else @click="selectFilter(filter.k, option)">
+                            <li style="text-align: center" v-else @click="selectFilter(filter.k, option.id||option)">
                                 <a style="line-height: 30px; font-size: 12px" href="#">{{option.name}}</a>
                             </li>
                         </ul>
@@ -158,11 +150,11 @@
                     </div>
                 </div>
                 <div class="type-wrap" style="text-align: center">
-                    <v-btn small flat v-show="!show" @click="show=true">
+                    <v-btn small flat v-show="!showMore" @click="showMore=true">
                         更多
                         <!--<v-icon>arrow_drop_down</v-icon>-->
                     </v-btn>
-                    <v-btn small flat v-show="show" @click="show=false">
+                    <v-btn small flat v-show="showMore" @click="showMore=false">
                         收起
                         <!--<v-icon>arrow_drop_up</v-icon>-->
                     </v-btn>
@@ -209,28 +201,28 @@
                                     <a :href="'/item/'+goods.id+'.html'" target="_blank">
                                         <!--展示图片有bug，什么时候出现bug？当一个sku有多个图片时-->
                                         <!--老师的代码是images，实际后台传的是image-->
-                                        <img :src="goods.selected.image" height="200"/></a>
+                                        <img :src="goods.selected.image" height="200"/>
+                                    </a>
                                     <ul class="skus">
-                                        <li :class="{selected: sku.id===goods.selected.id}" v-for="sku in goods.skus"
-                                            :key="sku.id" @mouseover="goods.selected=sku">
-                                            <!--老师的代码是images，实际后台传的是image-->
-                                            <img :src="sku.image"></li>
+                                        <li :class="{ selected: sku.id===goods.selected.id }" v-for="sku in goods.skus" :key="sku.id" @mouseover="goods.selected=sku">    <!--@mouseover鼠标移到的时候触发-->
+                                            <img :src="sku.image">      <!--老师的代码是images，实际后台传的是image-->
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="clearfix"></div>
                                 <div class="price">
                                     <strong>
                                         <em>¥</em>
-                                        <i>{{ly.formatPrice(goods.selected.price)}}</i>
+                                        <i>{{ly.formatPrice(goods.selected.price)}}</i>     <!--价格格式；要想在页面中使用的变量，必须是在vue里面定义了的，ly得先定义-->
                                     </strong>
                                 </div>
-                                <div class="attr"><a :href="'/item/' + goods.id + '.html'" target="_blank">
-                                    <em>{{goods.selected.title.length<20 ? goods.selected.title
-                                        :goods.selected.title.substring(0,20)+"..."}}</em></a>
+                                <div class="attr">
+                                    <a :href="'/item/' + goods.id + '.html'" target="_blank">
+                                        <em>{{ goods.selected.title.length<20 ? goods.selected.title : goods.selected.title.substring(0,20)+"..." }}</em>   <!--标题太长就截取-->
+                                    </a>
                                 </div>
                                 <div class="cu">
-                                    <em><span>促</span>{{goods.subTitle.length<18 ? goods.subTitle
-                                        :goods.subTitle.substring(0,15)+"..."}}</em>
+                                    <em><span>促</span>{{ goods.subTitle.length<18 ? goods.subTitle : goods.subTitle.substring(0,15)+"..." }}</em>   <!--子标题太长就截取-->
                                 </div>
                                 <div class="commit">
                                     <i class="command">已有2000人评价</i>
@@ -250,19 +242,18 @@
                 <div class="fr">
                     <div class="sui-pagination pagination-large">
                         <ul>
-                            <li :class="{prev:true,disabled:search.page===1}" @click="pre">
-                                <a href="#">«上一页</a>
+                            <li :class="{prev:true,disabled:search.page===1}">
+                                <a href="#" @click.prevent="pre">«上一页</a>
                             </li>
-                            <li :class="{active: index(i) === search.page}" v-for="i in Math.min(5,totalPage)" :key="i"
-                                @click="search.page=index(i)">
+                            <li :class="{active: index(i) === search.page}" v-for="i in Math.min(5,totalPage)" :key="i" @click="search.page=index(i)">
                                 <a href="#">{{index(i)}}</a>
                             </li>
-                            <li class="dotted"><span>...</span></li>
-                            <li :class="{disabled:search.page===totalPage}" @click="next">
-                                <a href="#">下一页»</a>
+                            <li class="dotted" v-show="search.page+2<totalPage&&totalPage>5"><span>...</span></li>
+                            <li :class="{next:true,disabled:search.page===totalPage}">
+                                <a href="#" @click.prevent="next">下一页»</a>
                             </li>
                         </ul>
-                        <div><span>共10页&nbsp;</span><span>
+                        <div><span>共{{totalPage}}页&nbsp;</span><span>
       到第
       <input type="text" class="page-num">
       页 <button class="page-confirm" onclick="alert(1)">确定</button></span></div>
@@ -362,33 +353,34 @@
     var vm = new Vue({
         el: "#searchApp",
         data: {
-            ly,
+            ly,             // ly:ly  名和值一样可以简写为ly  ly在js里面可以用，但是在页面上不能，所以在这里赋值一下
             search: {
                 key: "",
                 page: 1,
                 filter: {}
             },
             goodsList: [],
-            total: 0,  // 总条数
-            totalPage: 0, // 总页数
-            filters: [], //过滤项
-            show: false, // 是否显示更多
+            total: 0,        // 总条数
+            totalPage: 0,    // 总页数
+            filters: [],     // 过滤项，对象数组，对象：key搜索出来的规格名、options搜索出来的规格值;     商品分类和品牌是特殊情况，key是id，options是List<品牌or分类>
+            showMore: false,    // 是否显示更多过滤条件
         },
+        // 生命周期构造函数created：页面一加载就会执行。一加载就把key拿到发送到后台搜索
         created() {
             // 判断是否有请求参数
-            if (!location.search) {
+            if (!location.search) {    // location.search可以取到?key=....
+                // Bom对象中location分为很多部分protocol协议、host主机名、port端口、pathname路径、search搜索字符串；其实还有哈希，#后面的，它不会影响页面.
                 return;
             }
             // 将请求参数转为对象
-            //这个search是bom对象中location中的属性search
-            const search = ly.parse(location.search.substring(1));
+            const search = ly.parse( location.search.substring(1) );      // 截取掉开头的那个问号。ly.parse把参数都转换成JSON对象的格式字符串
 
-            search.page = search.page ? parseInt(search.page) : 1;
+            search.page = search.page ? parseInt(search.page) : 1;        // page为空就赋值为第一页    parseInt把字符串变成int值      page就是当前页
 
             //初始化过滤条件filter防止被覆盖
-            search.filter = search.filter || {};
+            search.filter = search.filter ?  search.filter : {};        // search.filter没东西就是false，跟上面的判断location.search为false一样； false那就取{}，为true就不用管后面了，短路形式。
 
-            // 记录在data的search对象中
+            //记录在data的search对象中
             //这个是刚才vue中自定义的search
             this.search = search;
 
@@ -398,35 +390,34 @@
         watch: {
             search: {
                 deep: true,
-                handler(val, old) {
+                handler(val, old) {     // data里search的最新值val和变化前的值old
                     if (!old || !old.key) {
-                        // 如果旧的search值为空，或者search中的key为空，证明是第一次
-                        return;
+                        return;        // 如果旧的search值为空，或者search中的key为空，证明是第一次。   没有这个就会无限刷新，死循环：created赋值data，变化了，就来watch，拼接到url，重新加载页面，继续created....
                     }
                     // this.searchFromServer(); 这样会使页面刷新把查询参数弄没了
-                    location.search = "?" + ly.stringify(this.search);
+                    location.search = "?" + ly.stringify(this.search);      // 参数拼接到url上   ly.stringify将js对象格式化为字符串参数对
                 }
             }
         }
         ,
         methods: {
+            // 调用后台进行搜索
             searchFromServer() {
                 // 发起异步请求
-                ly.http.post("/search/page", this.search)
+                ly.http.post("/search/page", this.search)       // POST发送对象，可以发送更多的参数，更方便
                     .then(resp => {
+                        if(resp.data===''){return;}
                         // 保存分页结果
                         this.total = resp.data.total;
                         this.totalPage = resp.data.totalPage;
-                        // 保存数据
+                        // 保存当前页商品数据
                         resp.data.items.forEach(goods => {
-                            // 把json处理成js对象
-                            goods.skus = JSON.parse(goods.skus);
-                            // 初始化被选中的sku
-                            goods.selected = goods.skus[0];
+                            goods.skus = JSON.parse(goods.skus);        // 把JSON字符串(list<map>)处理成JS对象（变成了一个数组，数组里面是对象）再重新赋值给resp.data.items里面的skus
+                            goods.selected = goods.skus[0];             // 初始化被选中的sku，页面展示的那个，刚开始就给第一个。每个goods都有一个被选中的sku
                         });
-                        this.goodsList = resp.data.items;
+                        this.goodsList = resp.data.items;               // 赋值给data去页面渲染
                         // 获取过滤结果
-                        this.filters.push(
+                        this.filters.push(      // 往数组里面塞数据，数组才能用push
                             {
                                 k: "cid3",
                                 options: resp.data.categories
@@ -442,7 +433,6 @@
                         resp.data.specs.forEach(spec => {
                             this.filters.push(spec);
                         });
-
                     })
             },
             index(i) {
@@ -467,19 +457,36 @@
                 }
             },
             selectFilter(k, o){
-                const obj = {};
-                Object.assign(obj, this.search);
-                if(k === 'cid3' || k === 'brandId'){
-                    o = o.id;
-                }
-                obj.filter[k] = o;
-                this.search = obj;
+                // const obj = {};
+                // Object.assign(obj, this.search);        // 把this.search里面所有可以枚举的属性复制到obj对象，然后返回；  如果obj里面也有这个属性就会被覆盖合并
+                // if(k === 'cid3' || k === 'brandId'){    // 商品分类跟品牌传进来的是option对象，是发送他们的ID去后台； 其他规格就是直接传option的值
+                //     o = o.id;
+                // }
+                // obj.filter[k] = o;          // watch监控不到search.filter里面的变化，因为一开始只是监控的search.filter，它里面往下新增的属性没有去监控。但是你改变filter本身可以被监控到；watch是在created执行前就监控了
+                // this.search = obj;         // 所以这么写就是search发生改变了，watch就能监控到了    this.search.filter=obj 到这一层都能监控到 再下一层就不行了
+                // console.log(this.search);
+
+                const {... obj} = this.search.filter;
+                obj[k] = o;
+                this.search.filter  = obj;
+
+            },
+            findValue(k,v){
+                if(!this.filters){return;}          // 不要为null
+                if(k!=='brandId') return v;
+                return this.filters.find( f=>f.k==='brandId').options[0].name;    // 遍历数组filters，每一个作为参数f，如果f.k=brandId，就就返回这个数组里的对象，然后调用它的options[0].name属性
+            },
+            deleteFilter(k){
+                const {...obj} = this.search.filter;
+                delete obj[k];      // 删除对象，用delete，根据key删除即可
+                this.search.filter = obj;
             }
         },
-        computed:{
+        computed:{               // 计算属性，等于是一个属性，看起来像是个方法; 当我们有些复杂的逻辑要处理的时候，可以把逻辑写到计算属性里面;  只在最开始运算了一次，把结果缓存作为属性。
             remainFilters(){
-                const keys=Object.keys(this.search.filter);
-                return this.filters.filter(f=>!keys.includes(f.k)&&f.options.length>1);
+                const keys = Object.keys(this.search.filter);                                 // 获取已选择的项的key    Object.keys自动帮你过滤，只剩下key，形成一个数组；其实还有一个Object.values
+                return this.filters.filter( f=>!keys.includes(f.k) && f.options.length>0 );   // 对已选择的过滤项的过滤
+                // 数组filters的filter方法，它接收一个函数，函数接收一个参数f，函数里判断f.k是否在keys里面存在，不存在就要，存在的就去掉，并且f.options.length>1的才要，达到过滤的效果，然后返回过滤的结果，剩下的就是未选择的过滤项
             }
         },
         components: {
